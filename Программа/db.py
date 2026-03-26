@@ -28,9 +28,12 @@ def init_users_table():
             parol       VARCHAR(255) NOT NULL,
             rol         VARCHAR(50)  NOT NULL DEFAULT 'Пользователь',
             zablokirovan BOOLEAN NOT NULL DEFAULT FALSE,
-            popytki     INTEGER NOT NULL DEFAULT 0
         );
     """)
+    # Если таблица уже была создана раньше, гарантируем наличие нужных колонок
+    cur.execute("ALTER TABLE polzovateli ADD COLUMN IF NOT EXISTS zablokirovan BOOLEAN NOT NULL DEFAULT FALSE;")
+    cur.execute("ALTER TABLE polzovateli ADD COLUMN IF NOT EXISTS popytki INTEGER NOT NULL DEFAULT 0;")
+    cur.execute("ALTER TABLE polzovateli ADD COLUMN IF NOT EXISTS rol VARCHAR(50) NOT NULL DEFAULT 'Пользователь';")
     # Добавляем администратора по умолчанию если нет пользователей
     cur.execute("SELECT COUNT(*) FROM polzovateli;")
     count = cur.fetchone()[0]
@@ -56,8 +59,14 @@ def get_user(login: str):
     cur.close()
     conn.close()
     if row:
-        return {"id": row[0], "login": row[1], "parol": row[2],
-                "rol": row[3], "zablokirovan": row[4], "popytki": row[5]}
+        return {
+            "id": row[0],
+            "login": row[1],
+            "parol": row[2],
+            "rol": row[3],
+            "zablokirovan": bool(row[4]),
+            "popytki": row[5],
+        }
     return None
 
 
@@ -82,6 +91,18 @@ def reset_attempts(login: str):
     cur.execute(
         "UPDATE polzovateli SET popytki = 0 WHERE login = %s;",
         (login,)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
+def block_user(login: str):
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute(
+        "UPDATE polzovateli SET zablokirovan = TRUE, popytki = GREATEST(popytki, 3) WHERE login = %s;",
+        (login,),
     )
     conn.commit()
     cur.close()

@@ -32,6 +32,7 @@ class PuzzleCaptcha(tk.Frame):
         self.on_solved = on_solved
         self.on_failed = on_failed
         self.fails = 0
+        self._failed_out = False
         self.clicks = []
         self.title = tk.Label(
             self,
@@ -60,6 +61,8 @@ class PuzzleCaptcha(tk.Frame):
         self.shuffle()
 
     def shuffle(self):
+        if self._failed_out:
+            return
         for w in self.grid_frame.winfo_children():
             w.destroy()
         self.clicks.clear()
@@ -88,6 +91,8 @@ class PuzzleCaptcha(tk.Frame):
             self.btns.append((idx, btn))
 
     def _click(self, idx, btn):
+        if self._failed_out:
+            return
         if idx in self.clicks:
             self.clicks.remove(idx)
             original = ImageTk.PhotoImage(self.pieces[idx])
@@ -106,10 +111,19 @@ class PuzzleCaptcha(tk.Frame):
                 self.after(300, self._hide)  
             else:
                 self.fails += 1
-                self.status.config(text=f"Неверно. Попытка {self.fails}/3", fg=ACCENT)
-                self.after(800, self._reset_board)
                 if self.fails >= 3:
-                    self.after(800, self.on_failed)
+                    self.fails = 3
+                    self._failed_out = True
+                    self.status.config(
+                        text="Превышено количество попыток. Обратитесь к администратору.",
+                        fg=ACCENT,
+                    )
+                    for _idx, _btn in self.btns:
+                        _btn.config(state="disabled", cursor="")
+                    self.after(200, self.on_failed)
+                else:
+                    self.status.config(text=f"Неверно. Попытка {self.fails}/3", fg=ACCENT)
+                    self.after(800, self._reset_board)
 
     def _hide(self):
         self.grid_remove()   
@@ -124,6 +138,11 @@ class PuzzleCaptcha(tk.Frame):
 
     def reset_fails(self):
         self.fails = 0
+        self._failed_out = False
+        self.status.config(text="")
+        if hasattr(self, "btns"):
+            for _idx, _btn in self.btns:
+                _btn.config(state="normal", cursor="hand2")
 
     @property
     def fail_count(self):

@@ -1,21 +1,20 @@
-# Base backgrounds (neutral / minimal)
-BG = "#f5f5f5"
-BG2 = "#ffffff"
-BG3 = "#e9e9e9"
+# Минимальная тема: 2-3 цвета, 1 шрифт
+BG = "#ffffff"
+BG2 = BG
+BG3 = "#f0f0f0"
 
-# Text colors
 FG = "#111111"
-MUTED_FG = "#555555"
-FG2 = MUTED_FG
+MUTED_FG = FG
+FG2 = FG
 
-# Fonts
-FONT_TITLE = ("Segoe UI", 16, "bold")
-FONT_LABEL = ("Segoe UI", 10)
-FONT_BTN = ("Segoe UI", 10, "bold")
-FONT_SMALL = ("Segoe UI", 8)
-FONT_H1 = ("Segoe UI", 20, "bold")
+ACCENT = FG
 
-ACCENT = "#2f6fed"
+FONT = ("Segoe UI", 10)
+FONT_TITLE = FONT
+FONT_LABEL = FONT
+FONT_BTN = FONT
+FONT_SMALL = FONT
+FONT_H1 = FONT
 
 PAD_X = 40
 PAD_Y_HEADER = 20

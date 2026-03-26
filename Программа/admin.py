@@ -18,7 +18,7 @@ FONT_TABLE = ("Segoe UI", 9)
 class AdminWindow(tk.Toplevel):
     def __init__(self, parent, user):
         super().__init__(parent)
-        self.title(f"Администратор ({user['login']})")
+        self.title(f"Молочное производство — Администратор ({user['login']})")
         self.configure(bg=BG)
         self.minsize(700, 500)
         self.resizable(True, True)

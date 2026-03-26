@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
 import db
 from captcha import PuzzleCaptcha
 
@@ -17,11 +17,10 @@ from ui_theme import (
     FONT_SMALL,
 )
 
-
 class LoginWindow(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("OWNOSH — Авторизация")
+        self.title("Молочное производство — Авторизация")
         self.configure(bg=BG)
         self.resizable(True, True)
         self.minsize(400, 620)
@@ -37,13 +36,10 @@ class LoginWindow(tk.Tk):
         self._build_ui()
         self._center()
 
-    # ------------------------------------------------------------------ UI ---
-
     def _build_ui(self):
-        # Заголовок
         header = tk.Frame(self, bg=BG)
         header.pack(fill="x", pady=(30, 10))
-        tk.Label(header, text="OWNOSH", font=FONT_TITLE,
+        tk.Label(header, text="Молочное производство", font=FONT_TITLE,
                  bg=BG, fg=ACCENT).pack()
         tk.Label(
             header,
@@ -53,11 +49,9 @@ class LoginWindow(tk.Tk):
             fg=MUTED_FG,
         ).pack()
 
-        # Разделитель
         sep = tk.Frame(self, height=1, bg=BG3)
         sep.pack(fill="x", padx=40, pady=(0, 20))
 
-        # Карточка формы
         card = tk.Frame(self, bg=BG2, bd=0)
         card.pack(padx=40, fill="x")
         card.columnconfigure(0, weight=1)
@@ -70,19 +64,16 @@ class LoginWindow(tk.Tk):
             fg=FG,
         ).grid(row=0, column=0, pady=(16, 12))
 
-        # Логин
         self._add_field(card, "Логин", row=1)
         self._login_var = tk.StringVar()
         self._login_entry = self._styled_entry(card, self._login_var)
         self._login_entry.grid(row=2, column=0, padx=20, sticky="ew", pady=(0, 10))
 
-        # Пароль
         self._add_field(card, "Пароль", row=3)
         self._pass_var = tk.StringVar()
         self._pass_entry = self._styled_entry(card, self._pass_var, show="●")
         self._pass_entry.grid(row=4, column=0, padx=20, sticky="ew", pady=(0, 16))
 
-        # Капча
         self._cap_frame = tk.LabelFrame(self, text=" Капча — подтвердите, что вы не робот ",
                                   bg=BG, fg=FG2,
                                   font=FONT_SMALL,
@@ -97,7 +88,6 @@ class LoginWindow(tk.Tk):
         self._captcha.pack(padx=4, pady=4)
         self._cap_visible = False
 
-        # Кнопка входа
         self._login_btn = tk.Button(
             self, text="ВОЙТИ",
             font=FONT_BTN, bg=ACCENT, fg="#ffffff",
@@ -108,13 +98,10 @@ class LoginWindow(tk.Tk):
         )
         self._login_btn.pack(padx=40, fill="x", pady=16)
 
-        # Статус
         self._status_lbl = tk.Label(self, text="", font=FONT_SMALL,
                                     bg=BG, fg=ACCENT, wraplength=340)
         self._status_lbl.pack(padx=40)
 
-
-        # Привязки клавиш
         self.bind("<Return>", lambda e: self._on_login())
         self._login_entry.bind("<Tab>", lambda e: (self._pass_entry.focus(), "break"))
         self._login_var.trace_add("write", lambda *_: self._maybe_toggle_captcha())
@@ -146,8 +133,6 @@ class LoginWindow(tk.Tk):
         sw, sh = self.winfo_screenwidth(), self.winfo_screenheight()
         self.geometry(f"+{(sw - w) // 2}+{(sh - h) // 2}")
 
-    # --------------------------------------------------------------- Logic ---
-
     def _maybe_toggle_captcha(self):
         login = self._login_var.get().strip()
         parol = self._pass_var.get().strip()
@@ -172,9 +157,19 @@ class LoginWindow(tk.Tk):
         self._set_status("✓ Капча пройдена", ACCENT)
 
     def _on_puzzle_failed(self):
-        messagebox.showerror("Капча", "Слишком много неверных попыток капчи. Попробуйте ещё раз.")
+        login = self._login_var.get().strip()
+        if login:
+            try:
+                db.block_user(login)
+            except Exception:
+                pass
+        messagebox.showerror(
+            "Капча",
+            "Превышено количество попыток. Обратитесь к администратору.",
+        )
         self._puzzle_solved = False
-        self._captcha.shuffle()
+        self._login_btn.config(state="disabled")
+        self.after(200, self.destroy)
 
     def _on_login(self):
         login = self._login_var.get().strip()
@@ -213,6 +208,8 @@ class LoginWindow(tk.Tk):
         if user["zablokirovan"]:
             messagebox.showerror("Заблокировано",
                 "Вы заблокированы. Обратитесь к администратору.")
+            self._login_btn.config(state="disabled")
+            self.after(200, self.destroy)
             return
 
         if user["parol"] != parol:
@@ -228,6 +225,8 @@ class LoginWindow(tk.Tk):
             if user and user.get("zablokirovan"):
                 messagebox.showerror("Заблокировано", "Вы заблокированы. Обратитесь к администратору.")
                 self._set_status("Учётная запись заблокирована.", ACCENT)
+                self._login_btn.config(state="disabled")
+                self.after(200, self.destroy)
             elif user:
                 self._set_status(
                     f"Неверный пароль. Попыток: {user.get('popytki', 0)}/3",
