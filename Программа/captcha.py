@@ -81,7 +81,7 @@ class PuzzleCaptcha(tk.Frame):
         for pos, idx in enumerate(order):
             tk_img = ImageTk.PhotoImage(self.pieces[idx])
             r, c = divmod(pos, COLS)
-            btn = tk.Button(self.grid_frame, image=tk_img, relief="flat", bg="#0f3460", cursor="hand2")
+            btn = tk.Button(self.grid_frame, image=tk_img, relief="flat", bg=BG3, cursor="hand2")
             btn.image = tk_img
             btn.grid(row=r, column=c, padx=2, pady=2)
             btn.config(command=lambda i=idx, b=btn: self._click(i, b))

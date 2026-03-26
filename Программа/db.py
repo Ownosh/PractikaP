@@ -1,12 +1,15 @@
+import os
 import psycopg2
-from psycopg2 import sql
+from dotenv import load_dotenv
+
+load_dotenv()
 
 DB_CONFIG = {
-    "host": "postgresql-ownosh.alwaysdata.net",
-    "port": 5432,
-    "database": "ownosh_pp",
-    "user": "ownosh",
-    "password": "S~0U;G~1z(f" 
+    "host": os.getenv("DB_HOST", ""),
+    "port": int(os.getenv("DB_PORT", "5432")),
+    "database": os.getenv("DB_NAME", ""),
+    "user": os.getenv("DB_USER", ""),
+    "password": os.getenv("DB_PASSWORD", ""),
 }
 
 
@@ -61,14 +64,13 @@ def get_user(login: str):
 def increment_attempts(login: str):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute(
-        "UPDATE polzovateli SET popytki = popytki + 1 WHERE login = %s;",
-        (login,)
-    )
-    cur.execute(
-        "UPDATE polzovateli SET zablokirovan = TRUE WHERE login = %s AND popytki >= 3;",
-        (login,)
-    )
+    cur.execute("""
+        UPDATE polzovateli
+        SET
+            popytki = popytki + 1,
+            zablokirovan = CASE WHEN (popytki + 1) >= 3 THEN TRUE ELSE zablokirovan END
+        WHERE login = %s;
+    """, (login,))
     conn.commit()
     cur.close()
     conn.close()
