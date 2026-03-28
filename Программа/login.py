@@ -74,7 +74,7 @@ class LoginWindow(tk.Tk):
         self._pass_entry = self._styled_entry(card, self._pass_var, show="●")
         self._pass_entry.grid(row=4, column=0, padx=20, sticky="ew", pady=(0, 16))
 
-        self._cap_frame = tk.LabelFrame(self, text=" Капча — подтвердите, что вы не робот ",
+        self._cap_frame = tk.LabelFrame(self,
                                   bg=BG, fg=FG2,
                                   font=FONT_SMALL,
                                   bd=1, relief="groove")

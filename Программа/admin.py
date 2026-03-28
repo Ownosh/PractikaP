@@ -125,7 +125,6 @@ class AdminWindow(tk.Toplevel):
             ("Добавить", BG3, FG, self._add_user),
             ("Сохранить", BG3, FG, self._save_user),
             ("Обновить", BG3, MUTED_FG, self._load_users),
-            ("Очистить", BG3, MUTED_FG, self._clear_form),
         ]
         for text, bg, fg, cmd in btns:
             tk.Button(btn_frame, text=text, font=FONT_BTN,
